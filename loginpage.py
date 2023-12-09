@@ -45,6 +45,8 @@ def login_window():
     # Load images
     background = pg.image.load('graphics/login_screen.jpg')
 
+    leaderboard = pg.image.load('graphics/leaderboard_overlay.png')
+
     login_button = pg.image.load('graphics/buttons/login_button.png')
     login_button_default = pg.image.load('graphics/buttons/login_button.png')
     login_button_hover = pg.image.load('graphics/buttons/login_button_hover.png')
@@ -108,12 +110,34 @@ def login_window():
     def login_click():
         validate_userinput()
 
+    # Validate the leaderboard entries
+    def validate_leaderboard():
+        sorted_dict = dict(sorted(loaded_data.items(), key=lambda item: item[1][1], reverse=True))
+        sorted_list = list(sorted_dict.keys())
+        first_place = "..."
+        second_place = "..."
+        third_place = "..."
+        if len(sorted_list) >= 1:
+            first_place = sorted_list[0]
+        if len(sorted_list) >= 2:
+            second_place = sorted_list[1]
+        if len(sorted_list) >= 3:
+            third_place = sorted_list[2]
+        return first_place, second_place, third_place
+
     # Main function for running the opened window
     while page_running:
         # Setup background
         screen.blit(background, (0, 0))
+        screen.blit(leaderboard, (0, 0))
         screen.blit(login_button, (0, 0))
         screen.blit(register_text, (0, 0))
+
+        # Display leaderboard entries
+        first, second, third = validate_leaderboard()
+        display_text(screen, first, (100, 152), (22, 172, 201), 40)
+        display_text(screen, second, (100, 210), (22, 172, 201), 40)
+        display_text(screen, third, (100, 270), (22, 172, 201), 40)
 
         # Eventmanager
         for event in pg.event.get():
