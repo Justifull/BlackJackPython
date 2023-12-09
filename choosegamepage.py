@@ -1,6 +1,6 @@
 import pygame as pg
 import math
-from blackjack import blackjack_window
+from blackjackpage import blackjack_window
 from database import load
 from layoutessentials import display_text
 from depositpage import deposit_window
@@ -25,7 +25,7 @@ def choose_game_window(username, password):
     font = pg.font.SysFont("Arial", 30)
 
     # Load images
-    background = pg.image.load('graphics/choose_game.jpg')
+    background = pg.image.load('graphics/choose_game_screen.jpg')
 
     games_radius = 220
     game_left_center = (397, 670)
@@ -86,7 +86,7 @@ def choose_game_window(username, password):
                 distances = get_distances(event.pos)
                 # Event when clicking each game icon
                 if distances[0] <= games_radius:
-                    blackjack_window(username, password, loaded_data[username][1])
+                    blackjack_window(username, password)
                 elif distances[1] <= games_radius:
                     print("mid")
                 elif distances[2] <= games_radius:
