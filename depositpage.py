@@ -44,6 +44,8 @@ def deposit_window(username, password):
     deposit_button_default = pg.image.load('graphics/buttons/deposit_button_deposit.png')
     deposit_button_hover = pg.image.load('graphics/buttons/deposit_button_deposit_hover.png')
 
+    exit_button = pg.image.load('graphics/buttons/quit_button.png')
+
     # Initialize window
     screen = pg.display.set_mode((window_width, window_height))
     pg.display.set_caption("Casino - Rick and Morty")
@@ -55,6 +57,7 @@ def deposit_window(username, password):
     # Loading Database content and initializing the timer for a database update
     timer_for_database_update = 0
     loaded_data = load()
+    player_money = loaded_data[username][1]
 
     # Setting up a textfield indicator
     cursor_position_deposit = 0
@@ -75,7 +78,7 @@ def deposit_window(username, password):
             deposit_status_position = [850, 1000]
             deposit_status_color = (0, 255, 0)
             page_running = False
-            save(username, password, int(deposit_amount_field_text) + loaded_data[username][1])
+            save(username, password, int(deposit_amount_field_text) + player_money)
         else:
             # Setting the correct login status
             deposit_status = "Please enter a value to deposit"
@@ -91,6 +94,7 @@ def deposit_window(username, password):
         # Setup background
         screen.blit(background, (0, 0))
         screen.blit(deposit_button, (0, 0))
+        screen.blit(exit_button, (1850, 20))
 
         # Eventmanager
         for event in pg.event.get():
@@ -123,6 +127,11 @@ def deposit_window(username, password):
                         cursor_position_deposit += len(char)
 
             elif event.type == pg.MOUSEBUTTONDOWN:
+                # Quit button
+                if pg.Rect(1850, 20, 35, 25).collidepoint(event.pos):
+                    save(username, password, player_money)
+                    page_running = False
+
                 # Focus a textfield to enter text / focus no field
                 if pg.Rect(720, 840, 475, 40).collidepoint(event.pos):
                     focussed_field = 1

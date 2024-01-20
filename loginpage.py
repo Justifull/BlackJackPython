@@ -55,6 +55,8 @@ def login_window():
     register_text_default = pg.image.load('graphics/buttons/register_text.png')
     register_text_hover = pg.image.load('graphics/buttons/register_text_hover.png')
 
+    exit_button = pg.image.load('graphics/buttons/quit_button.png')
+
     # Initialize window
     screen = pg.display.set_mode((window_width, window_height))
     pg.display.set_caption("Casino - Rick and Morty")
@@ -132,6 +134,7 @@ def login_window():
         screen.blit(leaderboard, (0, 0))
         screen.blit(login_button, (0, 0))
         screen.blit(register_text, (0, 0))
+        screen.blit(exit_button, (1850, 20))
 
         # Display leaderboard entries
         first, second, third = validate_leaderboard()
@@ -187,6 +190,10 @@ def login_window():
                         cursor_position_password += len(char)
 
             elif event.type == pg.MOUSEBUTTONDOWN:
+                # Quit button
+                if pg.Rect(1850, 20, 35, 25).collidepoint(event.pos):
+                    page_running = False
+
                 # Focus a textfield to enter text / focus no field
                 if pg.Rect(720, 750, 475, 40).collidepoint(event.pos):
                     focussed_field = 1

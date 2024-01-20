@@ -1,7 +1,7 @@
 import pygame as pg
 import math
 from blackjackpage import blackjack_window
-from database import load
+from database import load, save
 from layoutessentials import display_text
 from depositpage import deposit_window
 
@@ -47,6 +47,8 @@ def choose_game_window(username, password):
     deposit_button_default = pg.image.load('graphics/buttons/deposit_button.png')
     deposit_button_hover = pg.image.load('graphics/buttons/deposit_button_hover.png')
 
+    exit_button = pg.image.load('graphics/buttons/quit_button.png')
+
     # Initialize window
     screen = pg.display.set_mode((window_width, window_height))
     pg.display.set_caption("Casino - Rick and Morty")
@@ -57,6 +59,7 @@ def choose_game_window(username, password):
     # Loading Database content and initializing the timer for a database update
     timer_for_database_update = 0
     loaded_data = load()
+    player_money = loaded_data[username][1]
 
     def get_distances(mousepos):
         distance_left = math.sqrt(
@@ -74,6 +77,7 @@ def choose_game_window(username, password):
         screen.blit(game_mid, (0, 0))
         screen.blit(game_right, (0, 0))
         screen.blit(deposit_button, (0, 0))
+        screen.blit(exit_button, (1850, 20))
 
         # Display the current balance
         display_text(screen, f"{loaded_data[username][1]}$", (1550, 36), (0, 0, 0), 35)
@@ -84,6 +88,11 @@ def choose_game_window(username, password):
                 page_running = False
             if event.type == pg.MOUSEBUTTONDOWN:
                 distances = get_distances(event.pos)
+                # Quit button
+                if pg.Rect(1850, 20, 35, 25).collidepoint(event.pos):
+                    save(username, password, player_money)
+                    page_running = False
+
                 # Event when clicking each game icon
                 if distances[0] <= games_radius:
                     blackjack_window(username, password)

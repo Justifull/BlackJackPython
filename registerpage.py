@@ -53,6 +53,8 @@ def register_window():
     register_button_default = pg.image.load('graphics/buttons/register_button.png')
     register_button_hover = pg.image.load('graphics/buttons/register_button_hover.png')
 
+    exit_button = pg.image.load('graphics/buttons/quit_button.png')
+
     # Initialize window
     screen = pg.display.set_mode((window_width, window_height))
     pg.display.set_caption("Casino - Rick and Morty")
@@ -122,6 +124,7 @@ def register_window():
         # Setup background
         screen.blit(background, (0, 0))
         screen.blit(register_button, (0, 0))
+        screen.blit(exit_button, (1850, 20))
 
         # Eventmanager
         for event in pg.event.get():
@@ -194,6 +197,10 @@ def register_window():
                         cursor_position_balance += len(char)
 
             elif event.type == pg.MOUSEBUTTONDOWN:
+                # Quit button
+                if pg.Rect(1850, 20, 35, 25).collidepoint(event.pos):
+                    page_running = False
+
                 # Focus a textfield to enter text / focus no field
                 if pg.Rect(720, 750, 475, 40).collidepoint(event.pos):
                     focussed_field = 1

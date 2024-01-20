@@ -12,6 +12,7 @@ player = BlackJackPlayer()
 dealer = BlackJackPlayer()
 player_money = 0
 increasing_value = 0
+round_over = 0
 bet_amount = 0
 
 page_running = True
@@ -24,6 +25,7 @@ def blackjack_window(username, password):
     global page_running
     global player_money
     global increasing_value
+    global round_over
     global bet_amount
 
     # Code to reinitialize variables when restarting the window
@@ -86,6 +88,8 @@ def blackjack_window(username, password):
     deposit_button_default = pg.image.load('graphics/buttons/deposit_button.png')
     deposit_button_hover = pg.image.load('graphics/buttons/deposit_button_hover.png')
 
+    exit_button = pg.image.load('graphics/buttons/quit_button.png')
+
     # Initialize window
     screen = pg.display.set_mode((window_width, window_height))
     pg.display.set_caption("BlackJack - Rick and Morty")
@@ -135,10 +139,12 @@ def blackjack_window(username, password):
         global dealer
         global game
         global increasing_value
+        global round_over
         player = BlackJackPlayer()
         dealer = BlackJackPlayer()
         game = BlackJackGame()
         increasing_value = 0
+        round_over = 0
 
         dealer.add_card(game.take_card())
         player.update_cards(False, False)
@@ -182,30 +188,37 @@ def blackjack_window(username, password):
 
     # Main function for running the opened window
     while page_running:
-        # Setup background for playing area
+        # Setup background and exit button for playing area
         screen.blit(background, (0, 0))
 
+        # If the player successfully bet money we proceed
         if game.is_ready():
             player_card_value = get_deck_value(player.get_cards())
             dealer_card_value = get_deck_value(dealer.get_cards())
 
+            # Render the card stack
             for image in game.get_unused_card_stack():
                 screen.blit(image[1][0], (image[1][1][0], image[1][1][1]))
 
+            # Render the players cards
             for image in player.get_card_images():
                 screen.blit(image[0], (image[1][0], image[1][1]))
 
+            # Render the dealers cards
             for image in dealer.get_card_images():
                 screen.blit(image[0], (image[1][0], image[1][1]))
 
+            # If the game is not over (won or lost), displaying the stay and take button
             if not game.is_over():
                 screen.blit(take_button, (0, 0))
                 if not player.is_staying():
                     screen.blit(stay_button, (0, 0))
             else:
+                # If the game is won we proceed
                 if game.is_won() == 1:
                     screen.blit(win_overlay, (0, 0))
 
+                    # Changing the color of the money for the win animation
                     increasing_value_color = (0, 0, 255)
                     if increasing_value >= 1000000:
                         increasing_value_color = (0, 255, 0)
@@ -220,6 +233,7 @@ def blackjack_window(username, password):
                     elif increasing_value >= 10:
                         increasing_value_color = (0, 64, 255)
 
+                    # Displaying the win screen
                     font = pg.font.Font(font_path, 140)
                     text_render = font.render(str(increasing_value), True, increasing_value_color)
                     text_rect = text_render.get_rect()
@@ -227,6 +241,7 @@ def blackjack_window(username, password):
                     text_rect.topleft = (970 - text_rect.width // 2, 600 - text_rect.height // 2)
                     screen.blit(text_render, text_rect.topleft)
 
+                    # Update the displayed won money for the animation
                     if (increasing_value + 10000) < ((bet_amount * 2) - 20000):
                         increasing_value += 10000
                     elif (increasing_value + 1000) < ((bet_amount * 2) - 5000):
@@ -236,14 +251,17 @@ def blackjack_window(username, password):
                     elif increasing_value < (bet_amount * 2):
                         increasing_value += 1
 
+                    # Update the players money once
                     round_over += 1
                     if round_over == 1:
                         player_money += 2 * bet_amount
                         save(username, password, player_money)
+                # If the game is lost we proceed
                 elif game.is_won() == -1:
                     screen.blit(loose_overlay, (0, 0))
                 screen.blit(next_button, (0, 0))
 
+            # Calculate if we win or not after staying or hitting 21
             if player.is_staying() and game.is_won() == 0:
                 if 21 > player_card_value > dealer_card_value or (player_card_value < 21 < dealer_card_value):
                     game.end_game()
@@ -265,12 +283,15 @@ def blackjack_window(username, password):
             # Display current bet tokens value
             display_text(screen, f"{game.get_bet_token_value()}$", (320, 192), (0, 0, 0), 35)
 
+            # Display the bet and all in button
             screen.blit(bet_button, (0, 0))
             screen.blit(all_in_button, (0, 0))
 
+            # Display the tokens to bet
             for value in game.get_tokens():
                 screen.blit(value[0], (value[1][0], value[1][1]))
 
+            # Change the position for the tokens for better display
             bet_tokens = game.get_bet_tokens()
             position_x = 370
             position_y = 850
@@ -284,39 +305,54 @@ def blackjack_window(username, password):
                     position_y = 850
                     position_x += 90
 
+            # If we have more than 0 tokens bet we display the clear all bets button
             if len(bet_tokens) > 0:
                 screen.blit(clear_button, (0, 0))
 
+        # Display the exit and deposit button
         screen.blit(deposit_button, (0, 0))
+        screen.blit(exit_button, (1850, 20))
 
         # Display the current balance
         display_text(screen, f"{loaded_data[username][1]}$", (1550, 36), (0, 0, 0), 35)
 
+        # Eventmanager
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 save(username, password, player_money)
                 page_running = False
             elif event.type == pg.MOUSEBUTTONDOWN:
+                # Quit button
+                if pg.Rect(1850, 20, 35, 25).collidepoint(event.pos):
+                    save(username, password, player_money)
+                    page_running = False
+
+                # Functions for the stay and new card button
                 if not game.is_over() and game.is_ready():
                     if pg.Rect(1515, 890, 190, 45).collidepoint(event.pos):
                         new_card_click()
                     if pg.Rect(1515, 820, 190, 45).collidepoint(event.pos):
                         player_stay_click()
 
+                # Function for the new games button
                 elif pg.Rect(810, 685, 305, 75).collidepoint(event.pos) and game.is_over():
                     next_click()
 
+                # Functions for the bet button, clear all bets button and adding bets to the bet table
                 elif not game.is_ready():
                     if pg.Rect(890, 960, 140, 90).collidepoint(event.pos):
                         if game.get_bet_token_value() > 0:
                             bet_click()
+                    # Bet the maximum amount of money you can provide
                     elif pg.Rect(160, 115, 85, 45).collidepoint(event.pos):
                         all_in()
                     elif pg.Rect(310, 115, 85, 45).collidepoint(event.pos):
                         game.clear_bets()
+                    # Deposit new money to the account
                     elif pg.Rect(1720, 36, 43, 43).collidepoint(event.pos):
                         deposit_window(username, password)
                     else:
+                        # Adding bets to the bet table with clicking on the pictures of them
                         for bet_token in game.get_bet_tokens():
                             if bet_token[0].get_rect(topleft=(bet_token[1][0], bet_token[1][1])).collidepoint(
                                     event.pos):
@@ -326,6 +362,7 @@ def blackjack_window(username, password):
                                 if (game.get_bet_token_value() + token[2]) <= player_money and len(game.get_bet_tokens()) < 105:
                                     game.add_bet_token(token)
 
+            # Hover effects for the buttons
             elif event.type == pg.MOUSEMOTION:
                 if pg.Rect(890, 960, 140, 90).collidepoint(event.pos):
                     bet_button = bet_button_hover
